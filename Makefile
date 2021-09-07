@@ -1,10 +1,10 @@
 NAME = philo
 
-SRCS = philo.c \
+SRCS = philo.c utils.c \
 
 OBJS = $(SRCS:.c=.o)
 
-CC = clang -Wall -Wextra -Werror
+CC = clang -Wall -Wextra -Werror -pthread
 
 RM = rm -rf
 
@@ -12,8 +12,7 @@ RM = rm -rf
 
 all: ${NAME}
 
-$(NAME): 
-	@${OBJS}
+$(NAME): ${OBJS}
 
 clean:
 	@${RM} ${OBJS}
