@@ -19,7 +19,7 @@ int	my_atoi(char *number)
 	return ((int)res);
 }
 
-int	clean_all(t_global *time)
+int	clean_all(t_philo *time)
 {
 	int	i;
 
