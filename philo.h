@@ -2,34 +2,41 @@
 # define PHILO_H
 
 # include <stdio.h>
+# include <string.h>
 # include <pthread.h>
 # include <stdlib.h>
 # include <unistd.h>
+# include <sys/time.h>
 # define TAKE_FORK "has taken a fork\n"
 # define IS_EATING "is eating\n"
 # define IS_THINKING "is thinking\n"
 # define IS_SLEEPING "is sleeping\n"
 # define DIED "died\n"
 
-typedef struct s_table
-{
-	int				fork;
-	int				philosopher;
-	pthread_mutex_t	*mutex;
-	struct s_philo			*time;
-}				t_table;
-
 typedef struct s_philo
 {
-	int		to_die;
-	int		to_eat;
-	int		to_sleep;
-	int		each_must_eat;
-	int		nb_philosophers;
-	t_table	*philo;
+	int					philosopher;
+	int					alive;
+	long				last_meal;
+	struct s_actions	*actions;
 }				t_philo;
 
+typedef struct s_actions
+{
+	int				tto_die;
+	int				tto_eat;
+	int				tto_sleep;
+	int				each_must_eat;
+	int				nb_philosophers;
+	long			beginning;
+	int				is_alive;
+	pthread_mutex_t	mutex_die;
+	pthread_mutex_t	*mutex_fork;
+	t_philo			*philo;
+	struct timeval	start;
+}				t_actions;
+
 int		my_atoi(char *number);
-int		clean_all(t_philo *time);
+int		clean_all(t_actions *time);
 
 #endif

@@ -19,15 +19,17 @@ int	my_atoi(char *number)
 	return ((int)res);
 }
 
-int	clean_all(t_philo *time)
+int	clean_all(t_actions *actions)
 {
 	int	i;
 
-	if (time->philo != NULL)
+	i = 0;
+	while (i < actions->nb_philosophers)
+		pthread_mutex_destroy(&(actions->mutex_fork[i++]));
+	pthread_mutex_destroy(&(actions->mutex_die));
+	if (actions->philo != NULL)
 	{
-		i = 0;
-	//	while (time->p)
-			free(time->philo);
+			free(actions->philo);
 	}
 	return (0);
 }
