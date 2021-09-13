@@ -16,8 +16,8 @@
 typedef struct s_philo
 {
 	int					philosopher;
-	int					alive;
 	long				last_meal;
+	long				last_sleep;
 	struct s_actions	*actions;
 }				t_philo;
 
@@ -28,12 +28,12 @@ typedef struct s_actions
 	int				tto_sleep;
 	int				each_must_eat;
 	int				nb_philosophers;
-	long			beginning;
+	long			start;
 	int				is_alive;
+	pthread_mutex_t	mutex_print;
 	pthread_mutex_t	mutex_die;
 	pthread_mutex_t	*mutex_fork;
 	t_philo			*philo;
-	struct timeval	start;
 }				t_actions;
 
 int		my_atoi(char *number);

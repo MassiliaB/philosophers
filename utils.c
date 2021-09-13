@@ -27,6 +27,8 @@ int	clean_all(t_actions *actions)
 	while (i < actions->nb_philosophers)
 		pthread_mutex_destroy(&(actions->mutex_fork[i++]));
 	pthread_mutex_destroy(&(actions->mutex_die));
+	pthread_mutex_destroy(&(actions->mutex_print));
+//	pthread_mutex_destroy(&(actions->mutex_alive));
 	if (actions->philo != NULL)
 	{
 			free(actions->philo);
