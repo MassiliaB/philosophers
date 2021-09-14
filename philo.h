@@ -17,7 +17,7 @@ typedef struct s_philo
 {
 	int					philosopher;
 	long				last_meal;
-	long				last_sleep;
+	int					has_eat;
 	struct s_actions	*actions;
 }				t_philo;
 
@@ -28,7 +28,6 @@ typedef struct s_actions
 	int				tto_sleep;
 	int				each_must_eat;
 	int				nb_philosophers;
-	long			start;
 	int				is_alive;
 	pthread_mutex_t	mutex_print;
 	pthread_mutex_t	mutex_die;

@@ -4,7 +4,7 @@ SRCS = philo.c utils.c \
 
 OBJS = $(SRCS:.c=.o)
 
-CC = clang -Wall -Wextra -Werror -pthread -fsanitize=thread -g
+CC = clang -Wall -Wextra -Werror -pthread #-fsanitize=thread -g
 
 RM = rm -rf
 
