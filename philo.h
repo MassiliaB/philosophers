@@ -30,6 +30,7 @@ typedef struct s_actions
 	int				nb_philosophers;
 	int				is_alive;
 	pthread_mutex_t	mutex_print;
+	pthread_mutex_t	mutex_meal;
 	pthread_mutex_t	mutex_die;
 	pthread_mutex_t	*mutex_fork;
 	t_philo			*philo;

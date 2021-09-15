@@ -1,5 +1,34 @@
 #include "philo.h"
 
+
+/*void	my_usleep(long time)
+{
+	long	start_time;
+
+	start_time = get_ms();
+	while ((get_ms() - start_time) < time)
+		usleep(time);
+}
+int	my_usleep(int time_needed, t_datas *data)
+{
+	long	starting_time;
+	long	elapsed_time;
+	int		ret;
+
+	elapsed_time = 0;
+	starting_time = get_time_elapsed(data);
+	while (elapsed_time < time_needed)
+	{
+		usleep(300);
+		ret = check_death_variable(data);
+		if (ret)
+			return (ret);
+		elapsed_time = get_time_elapsed(data) - starting_time;
+	}
+	return (SUCCESS);
+}*/
+
+
 int	my_atoi(char *number)
 {
 	int			i;
@@ -28,13 +57,11 @@ int	clean_all(t_actions *actions)
 	{
 		while (i < actions->nb_philosophers)
 			pthread_mutex_destroy(&(actions->mutex_fork[i++]));
+		free(actions->mutex_fork);
 	}
 	pthread_mutex_destroy(&(actions->mutex_die));
 	pthread_mutex_destroy(&(actions->mutex_print));
-//	pthread_mutex_destroy(&(actions->mutex_alive));
 	if (actions->philo != NULL)
-	{
 		free(actions->philo);
-	}
 	return (0);
 }
