@@ -18,6 +18,8 @@ typedef struct s_philo
 	int					philosopher;
 	long				last_meal;
 	int					has_eat;
+	int					alive;
+	long				startt;
 	struct s_actions	*actions;
 }				t_philo;
 
@@ -38,5 +40,7 @@ typedef struct s_actions
 
 int		my_atoi(char *number);
 int		clean_all(t_actions *time);
+void	write_str(char *str);
+void	write_nbr(int nb);
 
 #endif

@@ -28,6 +28,38 @@ int	my_usleep(int time_needed, t_datas *data)
 	return (SUCCESS);
 }*/
 
+void	write_str(char *str)
+{
+	int i;
+
+	i = 0;
+	while (str[i])
+		i++;
+	write(1, str, i);
+}
+
+void	write_nbr(int nb)
+{
+	long	n;
+	char	c;
+
+	n = nb;
+	if (n < 0)
+	{
+		write(1, "-", 1);
+		n = n * -1;
+	}
+	if (n > 9)
+	{
+		write_nbr(n / 10);
+		write_nbr(n % 10);
+	}
+	else
+	{
+		c = n + '0';
+		write(1, &c, 1);
+	}
+}
 
 int	my_atoi(char *number)
 {
