@@ -1,33 +1,5 @@
 #include "philo.h"
 
-
-/*void	my_usleep(long time)
-{
-	long	start_time;
-
-	start_time = get_ms();
-	while ((get_ms() - start_time) < time)
-		usleep(time);
-}
-int	my_usleep(int time_needed, t_datas *data)
-{
-	long	starting_time;
-	long	elapsed_time;
-	int		ret;
-
-	elapsed_time = 0;
-	starting_time = get_time_elapsed(data);
-	while (elapsed_time < time_needed)
-	{
-		usleep(300);
-		ret = check_death_variable(data);
-		if (ret)
-			return (ret);
-		elapsed_time = get_time_elapsed(data) - starting_time;
-	}
-	return (SUCCESS);
-}*/
-
 void	write_str(char *str)
 {
 	int i;
