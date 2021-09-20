@@ -30,7 +30,8 @@ typedef struct s_actions
 	int				tto_sleep;
 	int				each_must_eat;
 	int				nb_philosophers;
-	int				is_alive;
+	int				are_alive;
+	
 	pthread_mutex_t	mutex_print;
 	pthread_mutex_t	mutex_meal;
 	pthread_mutex_t	mutex_die;
