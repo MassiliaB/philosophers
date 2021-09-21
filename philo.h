@@ -7,11 +7,11 @@
 # include <stdlib.h>
 # include <unistd.h>
 # include <sys/time.h>
-# define TAKE_FORK "has taken a fork\n"
-# define IS_EATING "is eating\n"
-# define IS_THINKING "is thinking\n"
-# define IS_SLEEPING "is sleeping\n"
-# define DIED "died\n"
+# define TAKE_FORK "has taken a fork"
+# define IS_EATING "is eating"
+# define IS_THINKING "is thinking"
+# define IS_SLEEPING "is sleeping"
+# define DIED "died"
 
 typedef struct s_philo
 {
