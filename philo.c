@@ -32,8 +32,6 @@ int	init(int ac, char **av, t_actions *actions)
 		return (0);
 	if (pthread_mutex_init(&(actions->mutex_print), NULL))
 		return (0);
-	if (pthread_mutex_init(&(actions->mutex_meal), NULL))
-		return (0);
 	return (1);
 }
 
@@ -71,28 +69,18 @@ long	get_ms()
 int	all_alive(t_philo *philo)
 {
 	pthread_mutex_lock(&(philo->actions->mutex_die));
-	if (philo->actions->are_alive)
+	if (!philo->actions->are_alive)
 	{
 		pthread_mutex_unlock(&(philo->actions->mutex_die));
-		return (1);
+		return (0);
 	}
 	pthread_mutex_unlock(&(philo->actions->mutex_die));
-	return (0);
+	return (1);
 }
 
 void	print_this(long time, int philosopher, t_philo *philo,  char *is_doing)
 {
-//	if (!all_alive(philo))
-//		return ;
 	pthread_mutex_lock(&philo->actions->mutex_print);
-
-	// write_nbr(time);
-	// write(1, "ms ", 3);
-	// write_nbr(philosopher);
-	// write(1, " ", 1);
-	// write_str(is_doing);
-	// write(1, "\n", 1);
-
 	printf("%ldms %d %s\n", time, philosopher, is_doing);
 	pthread_mutex_unlock(&(philo->actions->mutex_print));
 }
@@ -103,60 +91,42 @@ void	*is_alive(void *arg)
 	t_philo		*philo;
 	long		time_b;
 	long		actual_time;
-	int			last_meal2;
+//	int			last_meal2;
 
 	philo = (t_philo*)arg;
 	time_b = get_ms();
 	while (1)
 	{
-		// if (!)
-		// 	break ;
-		pthread_mutex_lock(&(philo->actions->mutex_meal));
-		last_meal2 = philo->last_meal ;
-		pthread_mutex_unlock(&(philo->actions->mutex_meal));
-		
-		actual_time = get_ms() - philo->startt;
-		if (actual_time - philo->last_meal > (long)philo->actions->tto_die)
+	//	if (!all_alive(philo))
+	//		return (NULL);
+		pthread_mutex_lock(&(philo->actions->mutex_die));
+		actual_time = get_ms() - philo->startt - philo->last_meal;
+		if (actual_time  > (long int)philo->actions->tto_die)
 		{				
-			pthread_mutex_lock(&(philo->actions->mutex_die));
-			philo->actions->are_alive = 0;
 			print_this(actual_time, philo->philosopher, philo, DIED);
+			philo->actions->are_alive = 0;
 			pthread_mutex_unlock(&(philo->actions->mutex_die));
-			break ;
+			return (NULL);
 		}
+		pthread_mutex_unlock(&(philo->actions->mutex_die));
+		usleep(10);
 	}
 	return (NULL);
 }
 
-void	my_usleep(long time, t_philo* philo)
+void	my_usleep(long time, t_philo* philo, int startt)
 {
-	long time_before = get_ms() - philo->startt;
-	long time_actual = 0;
+	long int time_before;
+	long int time_actual;
 
-	pthread_mutex_lock(&philo->actions->mutex_print);
-	printf("before philo %d\t%ldms\n", philo->philosopher, time_before);
-	pthread_mutex_unlock(&philo->actions->mutex_print);
-	
-
-	/*if (!all_alive(philo))
-	{
-		// pthread_mutex_lock(&philo->actions->mutex_print);
-		// printf("dead philo %d\t%ldms / %ldms in usleep\n", philo->philosopher, time_actual, time);
-		// pthread_mutex_unlock(&philo->actions->mutex_print);
-		return ;
-	}*/
+	time_before = get_ms() - startt;
+	time_actual = 0;
+	(void)philo;
 	while (time_actual < time)
 	{
-		usleep(10);
-		time_actual = get_ms() - philo->startt ;
-		// pthread_mutex_lock(&philo->actions->mutex_print);
-		// printf("%ldms philo %d\t%ldms / %ldms in usleep\n", get_ms() - philo->startt, philo->philosopher, time_actual, time);
-		// pthread_mutex_unlock(&philo->actions->mutex_print);
+		usleep(100);
+		time_actual = get_ms() - time_before;
 	}
-	// pthread_mutex_lock(&philo->actions->mutex_print);
-	// printf("out philo %d\t%ldms / %ldms in usleep\n", philo->philosopher, time_actual, time);
-	// pthread_mutex_unlock(&philo->actions->mutex_print);
-
 
 }
 
@@ -164,22 +134,22 @@ int	is_sleeping(t_philo *philo, long startt, int alive)
 {
 	(void)alive;
 	print_this(get_ms() - startt, philo->philosopher, philo, IS_SLEEPING);
-	my_usleep(philo->actions->tto_sleep, philo);
+	my_usleep(philo->actions->tto_sleep, philo, startt);
 	return (1);
 }
 
 void	is_eating(t_philo *philo, long startt)
 {
-	if (!all_alive(philo))
-		return ;
+//	if (!all_alive(philo))
+//		return ;
+
+	pthread_mutex_lock(&(philo->actions->mutex_die));
 	
 	print_this(get_ms() - startt, philo->philosopher, philo, IS_EATING);
-
-	pthread_mutex_lock(&(philo->actions->mutex_meal));
 	philo->last_meal = get_ms() - startt;
-	pthread_mutex_unlock(&(philo->actions->mutex_meal));
+	pthread_mutex_unlock(&(philo->actions->mutex_die));
 
-	my_usleep(philo->actions->tto_eat, philo);
+	my_usleep(philo->actions->tto_eat, philo, startt);
 
 	philo->has_eat += 1;
 }
@@ -234,6 +204,7 @@ void	*routine(void *arg)
 			pthread_mutex_lock(&(philo->actions->mutex_die));
 			philo->actions->are_alive = 0;
 			pthread_mutex_unlock(&(philo->actions->mutex_die));
+
 			printf("All philos ate %d time\n", philo->actions->each_must_eat);
 			break ;
 		}
