@@ -1,4 +1,22 @@
-#include "philo.h"
+
+# include <unistd.h>
+
+/*void	my_usleep(long time, t_philo* philo, int startt)
+{
+	long int time_before;
+	long int time_actual;
+
+	time_before = get_ms() - startt;
+	time_actual = 0;
+	(void)philo;
+	while (time_actual < time)
+	{
+		usleep(100);
+		time_actual = get_ms() - time_before;
+	}
+
+}
+*/
 
 void	write_str(char *str)
 {
@@ -50,22 +68,4 @@ int	my_atoi(char *number)
 	if (res > 2147483647)
 		return (-1);
 	return ((int)res);
-}
-
-int	clean_all(t_actions *actions)
-{
-	int	i;
-
-	i = 0;
-	if (actions->mutex_fork)
-	{
-		while (i < actions->nb_philosophers)
-			pthread_mutex_destroy(&(actions->mutex_fork[i++]));
-		free(actions->mutex_fork);
-	}
-	pthread_mutex_destroy(&(actions->mutex_die));
-	pthread_mutex_destroy(&(actions->mutex_print));
-	if (actions->philo != NULL)
-		free(actions->philo);
-	return (0);
 }
