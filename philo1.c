@@ -8,16 +8,12 @@ int	clean_all()
 	if (actions->mutex_fork)
 	{
 		while (i < actions->nb_philosophers)
-		{
-			pthread_mutex_destroy(&(actions->mutex_fork[i]));
-			i++;
-		}
+			pthread_mutex_destroy(&(actions->mutex_fork[i++]));
 		free(actions->mutex_fork);
 	}
 	pthread_mutex_destroy(&(actions->mutex_die));
 	pthread_mutex_destroy(&(actions->mutex_print));
-	pthread_mutex_destroy(&(actions->mutex_meal));
-	if (actions->philo)
+	if (actions->philo != NULL)
 		free(actions->philo);
 	return (0);
 }
@@ -31,15 +27,13 @@ int	init_mutex()
 		return (0);
 	i = -1;
 	while (++i < actions->nb_philosophers)
-	{
-		if (pthread_mutex_init(&(actions->mutex_fork[i]), 0))
+		if (pthread_mutex_init(&(actions->mutex_fork[i]), NULL))
 			return (0);
-	}
-	if (pthread_mutex_init(&(actions->mutex_die), 0))
+	if (pthread_mutex_init(&(actions->mutex_die), NULL))
 		return (0);
-	if (pthread_mutex_init(&(actions->mutex_print), 0))
+	if (pthread_mutex_init(&(actions->mutex_print), NULL))
 		return (0);
-	if (pthread_mutex_init(&(actions->mutex_meal), 0))
+	if (pthread_mutex_init(&(actions->mutex_meal), NULL))
 		return (0);
 	return (1);
 }
@@ -113,19 +107,6 @@ void	print_this(long time, int philosopher, char *is_doing)
 	pthread_mutex_unlock(&(actions->mutex_print));
 }
 
-void	is_eating(t_philo *philo, long startt)
-{
-	
-	print_this(get_ms() - startt, philo->philosopher, IS_EATING);
-
-	pthread_mutex_lock(&(actions->mutex_meal));
-	philo->last_meal = get_ms() - startt;
-	pthread_mutex_unlock(&(actions->mutex_meal));
-
-	usleep(actions->tto_eat * 1000);
-	philo->has_eat += 1;
-}
-
 int	takes_forks_and_eat(t_philo *philo, long startt)
 {
 	int		left;
@@ -144,11 +125,11 @@ int	takes_forks_and_eat(t_philo *philo, long startt)
 //printf("right = %d\n", right);
 //printf("left = %d\n", left);
 
-	print_this(get_ms() - startt, philo->philosopher, TAKE_FORK);
 	pthread_mutex_lock(&(actions->mutex_fork[left]));
-
 	print_this(get_ms() - startt, philo->philosopher, TAKE_FORK);
+
 	pthread_mutex_lock(&(actions->mutex_fork[right]));
+	print_this(get_ms() - startt, philo->philosopher, TAKE_FORK);
 
 	is_eating(philo, startt);
 
@@ -158,7 +139,8 @@ int	takes_forks_and_eat(t_philo *philo, long startt)
 }
 
 int	all_alive()
-{	
+{
+	
 	pthread_mutex_lock(&(actions->mutex_die));
 	if (!actions->are_alive)
 	{
@@ -194,8 +176,8 @@ void	*is_alive(void *arg)
 		if (all_alive() && actual_time  >= (long)actions->tto_die)
 		{				
 	//	printf("dead time and actual %ld , last meal %ld\n", actual_time, philo->last_meal);
-			print_this(actual_time, philo->philosopher, DIED);
 			pthread_mutex_lock(&(actions->mutex_die));
+			print_this(actual_time, philo->philosopher, DIED);
 			actions->are_alive = 0;
 			pthread_mutex_unlock(&(actions->mutex_die));
 			break ;
@@ -212,13 +194,13 @@ void	*routine(void *arg)
 	long		start_t;
 
 	philo = (t_philo*)arg;
+	while (!actions->here)
+		;
 	if (pthread_create(&thread, NULL, &is_alive, (void *)philo))
 		return (NULL);
  	start_t = get_ms();
-	while (1)
+	while (all_alive())
 	{
-		if (!all_alive())
-			break ;
 		print_this(get_ms() - start_t, philo->philosopher, IS_THINKING);
 		takes_forks_and_eat(philo, start_t);
 		if (philo->has_eat == actions->each_must_eat)
@@ -246,16 +228,13 @@ void	simulation()
 	i = 0;
 	while (i < actions->nb_philosophers)
 	{
-		if (pthread_create(&thread[i], 0, &routine, (void*)&(actions->philo[i])))
+		if (pthread_create(&thread[i], NULL, &routine, (actions->philo + i)))
 			break ;
 		i++;
 	}
-	i = 0;
-	while (i < actions->nb_philosophers)
-	{
-		pthread_join(thread[i], 0);
-		i++;
-	}
+	actions->here = 1;
+	while (--i >= 0)
+		pthread_join(thread[i], NULL);
 	free(thread);
 }
 
