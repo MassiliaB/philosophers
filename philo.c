@@ -7,7 +7,7 @@ int	clean_all()
 	i = 0;
 	if (actions->mutex_fork)
 	{
-		while (i < actions->nb_philosophers)
+		while (i <= actions->nb_philosophers)
 		{
 			pthread_mutex_destroy(&(actions->mutex_fork[i]));
 			i++;
@@ -26,14 +26,15 @@ int	init_mutex()
 {
 	int	i;
 
-	actions->mutex_fork = malloc(sizeof(pthread_mutex_t) * actions->nb_philosophers);
+	actions->mutex_fork = malloc(sizeof(pthread_mutex_t) * (actions->nb_philosophers + 1));
 	if (!actions->mutex_fork)
 		return (0);
-	i = -1;
-	while (++i < actions->nb_philosophers)
+	i = 0;
+	while (i <= actions->nb_philosophers)
 	{
 		if (pthread_mutex_init(&(actions->mutex_fork[i]), 0))
 			return (0);
+		i++;
 	}
 	if (pthread_mutex_init(&(actions->mutex_die), 0))
 		return (0);
@@ -124,6 +125,7 @@ void	is_eating(t_philo *philo, long startt)
 
 	usleep(actions->tto_eat * 1000);
 	philo->has_eat += 1;
+	printf("hola\n");
 }
 
 int	takes_forks_and_eat(t_philo *philo, long startt)
@@ -141,14 +143,14 @@ int	takes_forks_and_eat(t_philo *philo, long startt)
 		left = philo->philosopher;
 		right = philo->philosopher - 1;
 	}
-//printf("right = %d\n", right);
-//printf("left = %d\n", left);
+printf("right = %d\n", right);
+printf("left = %d\n", left);
 
-	print_this(get_ms() - startt, philo->philosopher, TAKE_FORK);
-	pthread_mutex_lock(&(actions->mutex_fork[left]));
-
-	print_this(get_ms() - startt, philo->philosopher, TAKE_FORK);
 	pthread_mutex_lock(&(actions->mutex_fork[right]));
+	print_this(get_ms() - startt, philo->philosopher, TAKE_FORK);
+
+	pthread_mutex_lock(&(actions->mutex_fork[left]));
+	print_this(get_ms() - startt, philo->philosopher, TAKE_FORK);
 
 	is_eating(philo, startt);
 
@@ -193,7 +195,7 @@ void	*is_alive(void *arg)
 
 		if (all_alive() && actual_time  >= (long)actions->tto_die)
 		{				
-	//	printf("dead time and actual %ld , last meal %ld\n", actual_time, philo->last_meal);
+	//	printf("dead time and actual %ld , last meal %ld\n", actual_time, philo->last_meal);		
 			print_this(actual_time, philo->philosopher, DIED);
 			pthread_mutex_lock(&(actions->mutex_die));
 			actions->are_alive = 0;
@@ -217,8 +219,6 @@ void	*routine(void *arg)
  	start_t = get_ms();
 	while (1)
 	{
-		if (!all_alive())
-			break ;
 		print_this(get_ms() - start_t, philo->philosopher, IS_THINKING);
 		takes_forks_and_eat(philo, start_t);
 		if (philo->has_eat == actions->each_must_eat)
@@ -230,6 +230,8 @@ void	*routine(void *arg)
 			break ;
 		}
 		is_sleeping(philo, start_t);
+		if (!all_alive())
+			break ;
 	}
 	pthread_join(thread, NULL);
 	return (NULL);
