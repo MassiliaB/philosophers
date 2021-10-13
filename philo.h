@@ -34,12 +34,14 @@ typedef struct s_actions
 }				t_actions;
 
 
+
+
 typedef struct s_philo
 {
-	int					philosopher;
-	long				last_meal;
-	int					has_eat;
-	long				startt;
+	int	philosopher;
+	long	last_meal;
+	int	has_eat;
+	long	start;
 }				t_philo;
 
 

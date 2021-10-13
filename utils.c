@@ -1,21 +1,7 @@
 
 # include <unistd.h>
 
-/*void	my_usleep(long time, t_philo* philo, int startt)
-{
-	long int time_before;
-	long int time_actual;
-
-	time_before = get_ms() - startt;
-	time_actual = 0;
-	(void)philo;
-	while (time_actual < time)
-	{
-		usleep(100);
-		time_actual = get_ms() - time_before;
-	}
-
-}
+/*
 */
 
 void	write_str(char *str)

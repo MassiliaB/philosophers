@@ -49,9 +49,9 @@ int	init_args(int args, char **av)
 {
 	if (args < 5 || args > 6)
 		return (0);
-	actions->nb_philosophers =  my_atoi(av[1]);
+	actions->nb_philosophers =	my_atoi(av[1]);
 	actions->tto_die = my_atoi(av[2]);
-	actions->tto_eat =  my_atoi(av[3]);
+	actions->tto_eat =	my_atoi(av[3]);
 	actions->tto_sleep =  my_atoi(av[4]);
 	actions->each_must_eat = -1;
 	actions->are_alive = 1;
@@ -99,33 +99,40 @@ long	get_ms()
 	return (time);
 }
 
+void	my_usleep(long time, int start)
+{
+	long int time_before;
+	long int time_actual;
+
+	time_before= get_ms() - start;
+	time_actual = 0;
+	while (time_actual - time_before <= time)
+	{
+		time_actual = get_ms() - start;
+		usleep(100);
+	}
+}
+
 void	print_this(long time, int philosopher, char *is_doing)
 {
-	
 	pthread_mutex_lock(&actions->mutex_print);
-
 	write_nbr(time);
 	write(1, "ms ", 3);
 	write_nbr(philosopher);
 	write(1, " ", 1);
 	write_str(is_doing);
 	write(1, "\n", 1);
-
 	pthread_mutex_unlock(&(actions->mutex_print));
 }
 
 void	is_eating(t_philo *philo, long startt)
 {
-	
 	print_this(get_ms() - startt, philo->philosopher, IS_EATING);
-
 	pthread_mutex_lock(&(actions->mutex_meal));
 	philo->last_meal = get_ms() - startt;
 	pthread_mutex_unlock(&(actions->mutex_meal));
-
-	usleep(actions->tto_eat * 1000);
+	my_usleep(actions->tto_eat, startt);
 	philo->has_eat += 1;
-	printf("hola\n");
 }
 
 int	takes_forks_and_eat(t_philo *philo, long startt)
@@ -143,9 +150,6 @@ int	takes_forks_and_eat(t_philo *philo, long startt)
 		left = philo->philosopher;
 		right = philo->philosopher - 1;
 	}
-printf("right = %d\n", right);
-printf("left = %d\n", left);
-
 	pthread_mutex_lock(&(actions->mutex_fork[right]));
 	print_this(get_ms() - startt, philo->philosopher, TAKE_FORK);
 
@@ -176,64 +180,51 @@ void	is_sleeping(t_philo *philo, long startt)
 	if (!all_alive())
 		return ;
 	print_this(get_ms() - startt, philo->philosopher, IS_SLEEPING);
-	usleep(actions->tto_sleep * 1000);
+	my_usleep(actions->tto_sleep, startt);
 }
 
-void	*is_alive(void *arg)
+
+int	is_it_dead(t_philo *philo, long start)
 {
-	t_philo		*philo;
-	long		start_t;
-	long		actual_time;
+	long	actual_time;
 
-	philo = (t_philo*)arg;
-	start_t = get_ms();
-	while (1)
-	{
-		pthread_mutex_lock(&(actions->mutex_meal));
-		actual_time = get_ms() - start_t - philo->last_meal;
-		pthread_mutex_unlock(&(actions->mutex_meal));
-
-		if (all_alive() && actual_time  >= (long)actions->tto_die)
-		{				
-	//	printf("dead time and actual %ld , last meal %ld\n", actual_time, philo->last_meal);		
-			print_this(actual_time, philo->philosopher, DIED);
-			pthread_mutex_lock(&(actions->mutex_die));
-			actions->are_alive = 0;
-			pthread_mutex_unlock(&(actions->mutex_die));
-			break ;
-		}
+	pthread_mutex_lock(&(actions->mutex_meal));
+	actual_time = get_ms() - start - philo->last_meal;
+	pthread_mutex_unlock(&(actions->mutex_meal));
+	if (all_alive() && actual_time >= (long)actions->tto_die)
+	{				
+		print_this(actual_time, philo->philosopher, DIED);
+		pthread_mutex_lock(&(actions->mutex_die));
+		actions->are_alive = 0;
+		pthread_mutex_unlock(&(actions->mutex_die));
+		return (1);
 	}
-	return (NULL);
+	return (0);
 }
-
 
 void	*routine(void *arg)
 {
 	t_philo		*philo;
-	pthread_t	thread;
-	long		start_t;
+	long		start;
 
 	philo = (t_philo*)arg;
-	if (pthread_create(&thread, NULL, &is_alive, (void *)philo))
-		return (NULL);
- 	start_t = get_ms();
-	while (1)
+	start = get_ms();
+	while (1 && all_alive())
 	{
-		print_this(get_ms() - start_t, philo->philosopher, IS_THINKING);
-		takes_forks_and_eat(philo, start_t);
-		if (philo->has_eat == actions->each_must_eat)
+		print_this(get_ms() - start, philo->philosopher, IS_THINKING);
+		takes_forks_and_eat(philo, start);
+		if (all_alive() && philo->has_eat == actions->each_must_eat)
 		{
 			pthread_mutex_lock(&(actions->mutex_die));
 			actions->are_alive = 0;
 			pthread_mutex_unlock(&(actions->mutex_die));
 			printf("All philos ate %d time\n", actions->each_must_eat);
-			break ;
+			return (NULL);
 		}
-		is_sleeping(philo, start_t);
-		if (!all_alive())
-			break ;
+		is_sleeping(philo, start);
+		if (is_it_dead(philo, start))
+			return (NULL);
 	}
-	pthread_join(thread, NULL);
 	return (NULL);
 }
 
