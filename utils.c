@@ -1,9 +1,6 @@
 
 # include <unistd.h>
 
-/*
-*/
-
 void	write_str(char *str)
 {
 	int i;
