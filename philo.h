@@ -23,28 +23,20 @@ typedef struct s_actions
 	int				each_must_eat;
 	int				nb_philosophers;
 	int				are_alive;
-	int				here;
-	
 	pthread_mutex_t	mutex_print;
 	pthread_mutex_t	mutex_meal;
 	pthread_mutex_t	mutex_die;
 	pthread_mutex_t	*mutex_fork;
-	struct s_philo	*philo;
-	
+	struct s_philo	*philo;	
 }				t_actions;
-
-
-
 
 typedef struct s_philo
 {
-	int	philosopher;
+	int		philosopher;
 	long	last_meal;
-	int	has_eat;
+	int		has_eat;
 	long	start;
 }				t_philo;
-
-
 
 int		my_atoi(char *number);
 int		clean_all();

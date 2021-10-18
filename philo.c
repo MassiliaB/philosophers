@@ -55,7 +55,6 @@ int	init_args(int args, char **av)
 	actions->tto_sleep =  my_atoi(av[4]);
 	actions->each_must_eat = -1;
 	actions->are_alive = 1;
-	actions->here = 0;
 	if (args == 6)
 	{
 		actions->each_must_eat =  my_atoi(av[5]);
@@ -94,7 +93,7 @@ long	get_ms()
 	struct timeval	current_time;
 
 	gettimeofday(&current_time, NULL);
-	return ((current_time.tv_sec) * 1000 + (current_time.tv_usec) / 1000);
+	return (((long)current_time.tv_sec) * 1000 + (current_time.tv_usec) / 1000);
 }
 
 void	my_usleep(long time, long start)
@@ -102,7 +101,7 @@ void	my_usleep(long time, long start)
 	long int time_before;
 	long int time_actual;
 
-	time_before= get_ms() - start;
+	time_before = get_ms() - start;
 	time_actual = 0;
 	while ((get_ms() - start) - time_before <= time)
 		usleep(100);
@@ -136,15 +135,18 @@ void	print_this(long time, int philosopher, char *is_doing)
 	write_str(is_doing);
 	write(1, "\n", 1);
 	pthread_mutex_unlock(&(actions->mutex_print));
-}
+}	
+
 
 void	is_eating(t_philo *philo, long start)
 {
+
 	print_this(get_ms() - start, philo->philosopher, IS_EATING);
 
 	pthread_mutex_lock(&(actions->mutex_meal));
 	philo->last_meal = get_ms() - start;
 	pthread_mutex_unlock(&(actions->mutex_meal));
+
 	my_usleep(actions->tto_eat, start);
 	philo->has_eat += 1;
 }
@@ -154,21 +156,18 @@ int	takes_forks_and_eat(t_philo *philo, long start)
 	int		left;
 	int		right;
 
+	
+	left = philo->philosopher;
+	right = philo->philosopher - 1;
 	if (philo->philosopher % 2 == 0)
-	{
-		left = philo->philosopher + 1;
-		right = philo->philosopher;
-	}
-	else
-	{
-		left = philo->philosopher;
-		right = philo->philosopher - 1;
-	}
+		right = philo->philosopher + 1;
+	
 	pthread_mutex_lock(&(actions->mutex_fork[right]));
 	print_this(get_ms() - start, philo->philosopher, TAKE_FORK);
 
 	pthread_mutex_lock(&(actions->mutex_fork[left]));
 	print_this(get_ms() - start, philo->philosopher, TAKE_FORK);
+
 
 	is_eating(philo, start);
 
@@ -217,7 +216,7 @@ void	*routine(void *arg)
 
 	philo = (t_philo*)arg;
 	start = get_ms();
-	while (1 && all_alive())
+	while (all_alive())
 	{
 		print_this(get_ms() - start, philo->philosopher, IS_THINKING);
 		takes_forks_and_eat(philo, start);
@@ -226,7 +225,8 @@ void	*routine(void *arg)
 		print_this(get_ms() - start, philo->philosopher, IS_SLEEPING);
 		my_usleep(actions->tto_sleep, start);
 		if (is_it_dead(philo, start))
-			return (NULL);
+		{
+			return (NULL);}
 	}
 	return (NULL);
 }
