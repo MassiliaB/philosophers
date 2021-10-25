@@ -54,6 +54,7 @@ int	init_args(int args, char **av)
 	actions->tto_eat =	my_atoi(av[3]);
 	actions->tto_sleep =  my_atoi(av[4]);
 	actions->each_must_eat = -1;
+	actions->start = 0;
 	actions->are_alive = 1;
 	if (args == 6)
 	{
@@ -103,8 +104,8 @@ void	my_usleep(long time, long start)
 
 	time_before = get_ms() - start;
 	time_actual = 0;
-	while ((get_ms() - start) - time_before <= time)
-		usleep(100);
+	while ((get_ms() - start) - time_before < time)
+		usleep(10);
 }
 
 int	all_alive()
@@ -119,8 +120,64 @@ int	all_alive()
 	return (1);
 }
 
-void	print_this(long time, int philosopher, char *is_doing)
+int	nb_size(int nb)
 {
+	int size;
+
+	size = 0;
+	if (nb == 0)
+		return (1);
+	while (nb > 0)
+	{
+		nb /= 10;
+		size++;
+	}
+	return (size);
+}
+
+void	buff_digit(int size, long nb, int index, char *buff)
+{
+	int i;
+
+	i = 0;
+	if (nb == 0)
+		buff[i++] = '0';
+	while (i < size)
+	{
+		buff[index + (size - i)] = nb % 10 + '0';
+		nb /= 10;
+		i++;
+	}
+	buff[index + size + i] = '\0';
+}
+
+void	buff_this(char *buff, long start, int philosopher, char *is_doing)
+{
+	int len;
+	int i;
+	long time;
+
+	time = 0;
+	time = get_ms() - start;
+	buff_digit(nb_size(time), time, -1, buff);
+	len = nb_size(time);
+	buff[len++] = 'm';
+	buff[len++] = 's';
+	buff[len] = ' ';
+	buff_digit(nb_size(philosopher), philosopher, len, buff);
+	len += nb_size(philosopher) + 1;
+	i = 0;
+	while (is_doing[i])
+	{
+		buff[len + i] = is_doing[i];
+		i++;
+	}
+	buff[len + i] = '\0';
+}
+void	print_this(long start, int philosopher, char *is_doing)
+{
+	char to_print[10000];
+
 	pthread_mutex_lock(&actions->mutex_print);
 
 	if (!all_alive())
@@ -128,12 +185,9 @@ void	print_this(long time, int philosopher, char *is_doing)
 		pthread_mutex_unlock(&(actions->mutex_print));
 		return ;
 	}
-	write_nbr(time);
-	write(1, "ms ", 3);
-	write_nbr(philosopher);
-	write(1, " ", 1);
-	write_str(is_doing);
-	write(1, "\n", 1);
+	buff_this(to_print, start, philosopher, is_doing);
+	write(1, &to_print, ft_strlen(to_print));
+
 	pthread_mutex_unlock(&(actions->mutex_print));
 }	
 
@@ -141,7 +195,7 @@ void	print_this(long time, int philosopher, char *is_doing)
 void	is_eating(t_philo *philo, long start)
 {
 
-	print_this(get_ms() - start, philo->philosopher, IS_EATING);
+	print_this(start, philo->philosopher, IS_EATING);
 
 	pthread_mutex_lock(&(actions->mutex_meal));
 	philo->last_meal = get_ms() - start;
@@ -162,36 +216,17 @@ int	takes_forks_and_eat(t_philo *philo, long start)
 	if (philo->philosopher % 2 == 0)
 		right = philo->philosopher + 1;
 	
+	print_this(start, philo->philosopher, TAKE_FORK);
 	pthread_mutex_lock(&(actions->mutex_fork[right]));
-	print_this(get_ms() - start, philo->philosopher, TAKE_FORK);
 
+	print_this(start, philo->philosopher, TAKE_FORK);
 	pthread_mutex_lock(&(actions->mutex_fork[left]));
-	print_this(get_ms() - start, philo->philosopher, TAKE_FORK);
-
 
 	is_eating(philo, start);
 
 	pthread_mutex_unlock(&(actions->mutex_fork[right]));
 	pthread_mutex_unlock(&(actions->mutex_fork[left]));
 	return (1);
-}
-
-int	is_it_dead(t_philo *philo, long start)
-{
-	long	actual_time;
-
-	pthread_mutex_lock(&(actions->mutex_meal));
-	actual_time = get_ms() - start - philo->last_meal;
-	pthread_mutex_unlock(&(actions->mutex_meal));
-	if (all_alive() && actual_time >= (long)actions->tto_die)
-	{
-		print_this(actual_time, philo->philosopher, DIED);
-		pthread_mutex_lock(&(actions->mutex_die));
-		actions->are_alive = 0;
-		pthread_mutex_unlock(&(actions->mutex_die));
-		return (1);
-	}
-	return (0);
 }
 
 int	time_has_eat(t_philo *philo)
@@ -209,6 +244,55 @@ int	time_has_eat(t_philo *philo)
 	return (1);
 }
 
+/*void	*is_it_dead(void *arg)
+{
+	long	actual_time;
+	t_philo		*philo;
+	long		start;
+
+	philo = (t_philo*)arg;
+	start = get_ms();
+	while (1)
+	{
+		pthread_mutex_lock(&(actions->mutex_meal));
+		actual_time = get_ms() - start - philo->last_meal;
+		pthread_mutex_unlock(&(actions->mutex_meal));
+//	printf("\n %ld && %ld && %ld\n", actual_time, philo->last_meal, actual_time - philo->last_meal);
+		if (all_alive() && actual_time >= actions->tto_die)
+		{
+			print_this(start, philo->philosopher, DIED);
+			pthread_mutex_lock(&(actions->mutex_die));
+			actions->are_alive = 0;
+			pthread_mutex_unlock(&(actions->mutex_die));
+			return (NULL);
+		}
+	}
+	return (NULL);
+	pthread_t		thread;
+	pthread_create(&thread, 0, &is_it_dead, (void*)&(philo));
+	pthread_join(thread, 0);
+
+}*/
+
+int	is_it_dead(t_philo *philo, long start)
+{
+	long	actual_time;
+
+	pthread_mutex_lock(&(actions->mutex_meal));
+	actual_time = get_ms() - start - philo->last_meal;
+	pthread_mutex_unlock(&(actions->mutex_meal));
+//	printf("\n %ld && %ld && %ld\n", actual_time, philo->last_meal, actual_time - philo->last_meal);
+	if (all_alive() && actual_time >= (long)actions->tto_die)
+	{
+		print_this(start, philo->philosopher, DIED);
+		pthread_mutex_lock(&(actions->mutex_die));
+		actions->are_alive = 0;
+		pthread_mutex_unlock(&(actions->mutex_die));
+		return (1);
+	}
+	return (0);
+}
+
 void	*routine(void *arg)
 {
 	t_philo		*philo;
@@ -218,16 +302,15 @@ void	*routine(void *arg)
 	start = get_ms();
 	while (all_alive())
 	{
-		print_this(get_ms() - start, philo->philosopher, IS_THINKING);
+		print_this(start, philo->philosopher, IS_THINKING);
 		takes_forks_and_eat(philo, start);
 		if (!time_has_eat(philo))
 			return (NULL);
-		print_this(get_ms() - start, philo->philosopher, IS_SLEEPING);
+		print_this(start, philo->philosopher, IS_SLEEPING);
 		my_usleep(actions->tto_sleep, start);
 		if (is_it_dead(philo, start))
-		{
-			return (NULL);}
-	}
+			return (NULL);
+}
 	return (NULL);
 }
 

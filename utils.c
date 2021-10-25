@@ -1,6 +1,16 @@
 
 # include <unistd.h>
 
+int	ft_strlen(char *str)
+{
+	int l;
+
+	l = 0;
+	while(str[l])
+		l++;
+	return (l);
+}
+
 void	write_str(char *str)
 {
 	int i;
