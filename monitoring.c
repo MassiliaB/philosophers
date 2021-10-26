@@ -10,8 +10,8 @@ long	get_ms()
 
 void	my_usleep(long time, long start)
 {
-	long int time_before;
-	long int time_actual;
+	long int	time_before;
+	long int	time_actual;
 
 	time_before = get_ms() - start;
 	time_actual = 0;
@@ -57,8 +57,8 @@ int	time_has_eat(t_philo *philo)
 void	*is_it_dead(void *arg)
 {
 	long	actual_time;
-	t_philo		*philo;
-	long		start;
+	t_philo	*philo;
+	long	start;
 
 	philo = (t_philo*)arg;
 	start = get_ms();

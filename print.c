@@ -2,7 +2,7 @@
 
 void	buff_digit(int size, long nb, int index, char *buff)
 {
-	int i;
+	int	i;
 
 	i = 0;
 	if (nb == 0)
@@ -18,9 +18,9 @@ void	buff_digit(int size, long nb, int index, char *buff)
 
 void	buff_this(char *buff, long start, int philosopher, char *is_doing)
 {
-	int len;
-	int i;
-	long time;
+	int		len;
+	int		i;
+	long	time;
 
 	time = get_ms() - start;
 	buff_digit(nb_size(time), time, -1, buff);
@@ -38,7 +38,8 @@ void	buff_this(char *buff, long start, int philosopher, char *is_doing)
 
 void	print_this(t_philo *philo, long start, int philosopher, char *is_doing)
 {
-	char to_print[10000];
+	char	to_print[10000];
+
 	pthread_mutex_lock(&philo->actions->mutex_print);
 	if (!all_alive(philo))
 	{

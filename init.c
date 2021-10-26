@@ -73,7 +73,7 @@ int	init_args(t_actions *actions, int args, char **av)
 	return (1);
 }
 
-void the_philo(t_actions *actions)
+void	the_philo(t_actions *actions)
 {
 	t_philo	*philo;
 	int		i;

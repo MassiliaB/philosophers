@@ -2,7 +2,7 @@
 
 int	nb_size(int nb)
 {
-	int size;
+	int	size;
 
 	size = 0;
 	if (nb == 0)
@@ -17,7 +17,7 @@ int	nb_size(int nb)
 
 int	ft_strlen(char *str)
 {
-	int l;
+	int	l;
 
 	l = 0;
 	while(str[l])

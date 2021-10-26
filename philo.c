@@ -26,8 +26,8 @@ void	is_eating(t_philo *philo, long start)
 
 int	takes_forks_and_eat(t_philo *philo, long start)
 {
-	int		left;
-	int		right;
+	int	left;
+	int	right;
 
 	left = philo->philosopher + 1;
 	right = philo->philosopher;
@@ -49,7 +49,7 @@ int	takes_forks_and_eat(t_philo *philo, long start)
 void	*routine(void *arg)
 {
 	t_philo		*philo;
-	pthread_t		thread;
+	pthread_t	thread;
 	long		start;
 
 	philo = (t_philo*)arg;
