@@ -1,10 +1,10 @@
 NAME = philo
 
-SRCS = philo.c utils.c \
+SRCS =  $(shell find . -name "*.c") \
 
 OBJS = $(SRCS:.c=.o)
 
-CC = clang -Wall -Wextra -Werror -pthread #-fsanitize=thread -g
+CC = clang -Wall -Wextra -Werror -pthread -g #-fsanitize=leak -g
 
 RM = rm -rf
 

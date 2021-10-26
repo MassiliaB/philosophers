@@ -1,5 +1,19 @@
+# include "philo.h"
 
-# include <unistd.h>
+int	nb_size(int nb)
+{
+	int size;
+
+	size = 0;
+	if (nb == 0)
+		return (1);
+	while (nb > 0)
+	{
+		nb /= 10;
+		size++;
+	}
+	return (size);
+}
 
 int	ft_strlen(char *str)
 {
@@ -9,16 +23,6 @@ int	ft_strlen(char *str)
 	while(str[l])
 		l++;
 	return (l);
-}
-
-void	write_str(char *str)
-{
-	int i;
-
-	i = 0;
-	while (str[i])
-		i++;
-	write(1, str, i);
 }
 
 void	write_nbr(int nb)
