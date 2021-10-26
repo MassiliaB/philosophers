@@ -23,8 +23,9 @@ typedef struct s_actions
 	int				each_must_eat;
 	int				nb_philosophers;
 	int				are_alive;
-	long				start;
+	int				each_one;
 	pthread_mutex_t	mutex_print;
+	pthread_mutex_t	mutex_eat;
 	pthread_mutex_t	mutex_meal;
 	pthread_mutex_t	mutex_die;
 	pthread_mutex_t	*mutex_fork;
@@ -44,5 +45,7 @@ int		clean_all();
 void	write_str(char *str);
 void	write_nbr(int nb);
 int		ft_strlen(char *str);
+
+//int	is_it_dead(t_philo *philo, long start);
 
 #endif

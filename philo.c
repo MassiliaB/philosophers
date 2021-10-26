@@ -17,6 +17,7 @@ int	clean_all()
 	pthread_mutex_destroy(&(actions->mutex_die));
 	pthread_mutex_destroy(&(actions->mutex_print));
 	pthread_mutex_destroy(&(actions->mutex_meal));
+	pthread_mutex_destroy(&(actions->mutex_eat));
 	if (actions->philo)
 		free(actions->philo);
 	return (0);
@@ -42,6 +43,8 @@ int	init_mutex()
 		return (0);
 	if (pthread_mutex_init(&(actions->mutex_meal), 0))
 		return (0);
+	if (pthread_mutex_init(&(actions->mutex_eat), 0))
+		return (0);
 	return (1);
 }
 
@@ -54,7 +57,7 @@ int	init_args(int args, char **av)
 	actions->tto_eat =	my_atoi(av[3]);
 	actions->tto_sleep =  my_atoi(av[4]);
 	actions->each_must_eat = -1;
-	actions->start = 0;
+	actions->each_one = 0;
 	actions->are_alive = 1;
 	if (args == 6)
 	{
@@ -94,7 +97,7 @@ long	get_ms()
 	struct timeval	current_time;
 
 	gettimeofday(&current_time, NULL);
-	return (((long)current_time.tv_sec) * 1000 + (current_time.tv_usec) / 1000);
+	return ((current_time.tv_sec) * 1000 + (current_time.tv_usec) / 1000);
 }
 
 void	my_usleep(long time, long start)
@@ -177,32 +180,30 @@ void	buff_this(char *buff, long start, int philosopher, char *is_doing)
 void	print_this(long start, int philosopher, char *is_doing)
 {
 	char to_print[10000];
-
 	pthread_mutex_lock(&actions->mutex_print);
-
 	if (!all_alive())
 	{
 		pthread_mutex_unlock(&(actions->mutex_print));
-		return ;
+		return;
 	}
 	buff_this(to_print, start, philosopher, is_doing);
 	write(1, &to_print, ft_strlen(to_print));
-
 	pthread_mutex_unlock(&(actions->mutex_print));
+	return ;
 }	
 
 
 void	is_eating(t_philo *philo, long start)
 {
-
 	print_this(start, philo->philosopher, IS_EATING);
-
 	pthread_mutex_lock(&(actions->mutex_meal));
 	philo->last_meal = get_ms() - start;
 	pthread_mutex_unlock(&(actions->mutex_meal));
-
 	my_usleep(actions->tto_eat, start);
+
+	pthread_mutex_lock(&(actions->mutex_eat));
 	philo->has_eat += 1;
+	pthread_mutex_unlock(&(actions->mutex_eat));
 }
 
 int	takes_forks_and_eat(t_philo *philo, long start)
@@ -210,20 +211,18 @@ int	takes_forks_and_eat(t_philo *philo, long start)
 	int		left;
 	int		right;
 
-	
-	left = philo->philosopher;
-	right = philo->philosopher - 1;
+	left = philo->philosopher + 1;
+	right = philo->philosopher;
 	if (philo->philosopher % 2 == 0)
-		right = philo->philosopher + 1;
-	
-	print_this(start, philo->philosopher, TAKE_FORK);
+	{
+		left = philo->philosopher;
+		right = philo->philosopher - 1;
+	}
 	pthread_mutex_lock(&(actions->mutex_fork[right]));
-
 	print_this(start, philo->philosopher, TAKE_FORK);
 	pthread_mutex_lock(&(actions->mutex_fork[left]));
-
+	print_this(start, philo->philosopher, TAKE_FORK);
 	is_eating(philo, start);
-
 	pthread_mutex_unlock(&(actions->mutex_fork[right]));
 	pthread_mutex_unlock(&(actions->mutex_fork[left]));
 	return (1);
@@ -231,20 +230,37 @@ int	takes_forks_and_eat(t_philo *philo, long start)
 
 int	time_has_eat(t_philo *philo)
 {
-	if (all_alive() && philo->has_eat == actions->each_must_eat)
+	if (actions->each_must_eat == -1)
+		return (-1);
+	pthread_mutex_lock(&(actions->mutex_eat));
+	if (philo->has_eat == actions->each_must_eat)
 	{
-		pthread_mutex_lock(&(actions->mutex_die));
-		actions->are_alive = 0;
-		pthread_mutex_unlock(&(actions->mutex_die));
-		write(1, "All philos ate", 14);
-		write_nbr(philo->has_eat);
-		write(1, "time\n", 5);
-		return (0);
+		if (actions->each_one != actions->nb_philosophers)
+		{
+			actions->each_one++;
+			pthread_mutex_unlock(&(actions->mutex_eat));
+
+			return (1);
+		}
+		if (actions->each_one == actions->nb_philosophers)
+		{
+			actions->each_one++;
+			pthread_mutex_unlock(&(actions->mutex_eat));
+
+			pthread_mutex_lock(&(actions->mutex_die));
+			actions->are_alive = 0;
+			pthread_mutex_unlock(&(actions->mutex_die));
+			write(1, "All philos ate ", 15);
+			write_nbr(philo->has_eat);
+			write(1, " time\n", 6);
+			return (1);
+		}
 	}
-	return (1);
+	pthread_mutex_unlock(&(actions->mutex_eat));
+	return (0);
 }
 
-/*void	*is_it_dead(void *arg)
+void	*is_it_dead(void *arg)
 {
 	long	actual_time;
 	t_philo		*philo;
@@ -257,60 +273,46 @@ int	time_has_eat(t_philo *philo)
 		pthread_mutex_lock(&(actions->mutex_meal));
 		actual_time = get_ms() - start - philo->last_meal;
 		pthread_mutex_unlock(&(actions->mutex_meal));
-//	printf("\n %ld && %ld && %ld\n", actual_time, philo->last_meal, actual_time - philo->last_meal);
-		if (all_alive() && actual_time >= actions->tto_die)
+		if (time_has_eat(philo) == 0)
+			;
+		else if (time_has_eat(philo) == 1 || !all_alive())
+		{
+			break ;
+		}
+		else if (actual_time >= (long)actions->tto_die)
 		{
 			print_this(start, philo->philosopher, DIED);
 			pthread_mutex_lock(&(actions->mutex_die));
 			actions->are_alive = 0;
 			pthread_mutex_unlock(&(actions->mutex_die));
-			return (NULL);
+			break ;
 		}
+		usleep(100);
 	}
 	return (NULL);
-	pthread_t		thread;
-	pthread_create(&thread, 0, &is_it_dead, (void*)&(philo));
-	pthread_join(thread, 0);
 
-}*/
-
-int	is_it_dead(t_philo *philo, long start)
-{
-	long	actual_time;
-
-	pthread_mutex_lock(&(actions->mutex_meal));
-	actual_time = get_ms() - start - philo->last_meal;
-	pthread_mutex_unlock(&(actions->mutex_meal));
-//	printf("\n %ld && %ld && %ld\n", actual_time, philo->last_meal, actual_time - philo->last_meal);
-	if (all_alive() && actual_time >= (long)actions->tto_die)
-	{
-		print_this(start, philo->philosopher, DIED);
-		pthread_mutex_lock(&(actions->mutex_die));
-		actions->are_alive = 0;
-		pthread_mutex_unlock(&(actions->mutex_die));
-		return (1);
-	}
-	return (0);
 }
+
 
 void	*routine(void *arg)
 {
 	t_philo		*philo;
+	pthread_t		thread;
 	long		start;
 
 	philo = (t_philo*)arg;
+	pthread_create(&thread, 0, &is_it_dead, philo);
 	start = get_ms();
-	while (all_alive())
+	while (1)
 	{
+		if (!all_alive())
+			break ;
 		print_this(start, philo->philosopher, IS_THINKING);
 		takes_forks_and_eat(philo, start);
-		if (!time_has_eat(philo))
-			return (NULL);
 		print_this(start, philo->philosopher, IS_SLEEPING);
 		my_usleep(actions->tto_sleep, start);
-		if (is_it_dead(philo, start))
-			return (NULL);
-}
+	}
+	pthread_join(thread, 0);
 	return (NULL);
 }
 
