@@ -4,7 +4,7 @@ SRCS =  $(shell find . -name "*.c") \
 
 OBJS = $(SRCS:.c=.o)
 
-CC = clang -Wall -Wextra -Werror -pthread -g #-fsanitize=leak -g
+CC = clang -Wall -Wextra -Werror -pthread #-fsanitize=thread -g
 
 RM = rm -rf
 

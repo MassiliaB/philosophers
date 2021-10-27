@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   init.c                                             :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: masboula <marvin@42.fr>                    +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2021/10/27 12:31:30 by masboula          #+#    #+#             */
+/*   Updated: 2021/10/27 12:31:31 by masboula         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "philo.h"
 
 int	clean_all(t_actions *actions)
@@ -27,7 +39,8 @@ int	init_mutex(t_actions *actions)
 {
 	int	i;
 
-	actions->mutex_fork = malloc(sizeof(pthread_mutex_t) * (actions->nb_philosophers + 1));
+	actions->mutex_fork = malloc(sizeof(pthread_mutex_t)
+			* (actions->nb_philosophers + 1));
 	if (!actions->mutex_fork)
 		return (0);
 	i = 0;
@@ -52,21 +65,21 @@ int	init_args(t_actions *actions, int args, char **av)
 {
 	if (args < 5 || args > 6)
 		return (0);
-	actions->nb_philosophers =	my_atoi(av[1]);
+	actions->nb_philosophers = my_atoi(av[1]);
 	actions->tto_die = my_atoi(av[2]);
-	actions->tto_eat =	my_atoi(av[3]);
-	actions->tto_sleep =  my_atoi(av[4]);
+	actions->tto_eat = my_atoi(av[3]);
+	actions->tto_sleep = my_atoi(av[4]);
 	actions->each_must_eat = -1;
 	actions->each_one = 0;
 	actions->are_alive = 1;
 	if (args == 6)
 	{
-		actions->each_must_eat =  my_atoi(av[5]);
+		actions->each_must_eat = my_atoi(av[5]);
 		if (actions->each_must_eat <= 0)
 			return (0);
 	}
-	if (actions->nb_philosophers <= 0 || actions->tto_die <= 0 ||
-		actions->tto_eat <= 0 || actions->tto_sleep <= 0)
+	if (actions->nb_philosophers <= 0 || actions->tto_die <= 0
+		|| actions->tto_eat <= 0 || actions->tto_sleep <= 0)
 		return (0);
 	if (!init_mutex(actions))
 		return (0);

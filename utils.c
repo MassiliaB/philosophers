@@ -1,4 +1,23 @@
-# include "philo.h"
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   utils.c                                            :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: masboula <marvin@42.fr>                    +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2021/10/27 12:31:21 by masboula          #+#    #+#             */
+/*   Updated: 2021/10/27 12:31:23 by masboula         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
+#include "philo.h"
+
+int	max(int a, int b)
+{
+	if (a > b)
+		return (a);
+	return (b);
+}
 
 int	nb_size(int nb)
 {
@@ -20,7 +39,7 @@ int	ft_strlen(char *str)
 	int	l;
 
 	l = 0;
-	while(str[l])
+	while (str[l])
 		l++;
 	return (l);
 }

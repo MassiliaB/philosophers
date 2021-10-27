@@ -56,5 +56,7 @@ void	buff_digit(int size, long nb, int index, char *buff);
 void	buff_this(char *buff, long start, int philosopher, char *is_doing);
 void	print_this(t_philo *philo, long start, int philosopher, char *is_doing);
 int		all_alive(t_philo *philo);
+int		takes_forks_and_eat(t_philo *philo, long start);
+int		max(int a, int b);
 
 #endif

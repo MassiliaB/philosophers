@@ -1,49 +1,34 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   philo.c                                            :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: masboula <marvin@42.fr>                    +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2021/10/27 12:31:01 by masboula          #+#    #+#             */
+/*   Updated: 2021/10/27 12:31:02 by masboula         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "philo.h"
 
-int	all_alive(t_philo *philo)
+long	get_ms(void)
 {
-	pthread_mutex_lock(&(philo->actions->mutex_die));
-	if (!philo->actions->are_alive)
-	{
-		pthread_mutex_unlock(&(philo->actions->mutex_die));
-		return (0);
-	}
-	pthread_mutex_unlock(&(philo->actions->mutex_die));
-	return (1);
+	struct timeval	current_time;
+
+	gettimeofday(&current_time, NULL);
+	return ((current_time.tv_sec) * 1000 + (current_time.tv_usec) / 1000);
 }
 
-void	is_eating(t_philo *philo, long start)
+void	my_usleep(long time, long start)
 {
-	print_this(philo, start, philo->philosopher, IS_EATING);
-	pthread_mutex_lock(&(philo->actions->mutex_meal));
-	philo->last_meal = get_ms() - start;
-	pthread_mutex_unlock(&(philo->actions->mutex_meal));
-	my_usleep(philo->actions->tto_eat, start);
-	pthread_mutex_lock(&(philo->actions->mutex_eat));
-	philo->has_eat += 1;
-	pthread_mutex_unlock(&(philo->actions->mutex_eat));
-}
+	long int	time_before;
+	long int	time_actual;
 
-int	takes_forks_and_eat(t_philo *philo, long start)
-{
-	int	left;
-	int	right;
-
-	left = philo->philosopher + 1;
-	right = philo->philosopher;
-	if (philo->philosopher % 2 == 0)
-	{
-		left = philo->philosopher;
-		right = philo->philosopher - 1;
-	}
-	pthread_mutex_lock(&(philo->actions->mutex_fork[right]));
-	print_this(philo, start, philo->philosopher, TAKE_FORK);
-	pthread_mutex_lock(&(philo->actions->mutex_fork[left]));
-	print_this(philo, start, philo->philosopher, TAKE_FORK);
-	is_eating(philo, start);
-	pthread_mutex_unlock(&(philo->actions->mutex_fork[right]));
-	pthread_mutex_unlock(&(philo->actions->mutex_fork[left]));
-	return (1);
+	time_before = get_ms() - start;
+	time_actual = 0;
+	while ((get_ms() - start) - time_before < time)
+		usleep(10);
 }
 
 void	*routine(void *arg)
@@ -52,7 +37,7 @@ void	*routine(void *arg)
 	pthread_t	thread;
 	long		start;
 
-	philo = (t_philo*)arg;
+	philo = (t_philo *)arg;
 	pthread_create(&thread, 0, &is_it_dead, philo);
 	start = get_ms();
 	while (1)
@@ -79,7 +64,7 @@ void	simulation(t_actions *actions)
 	i = 0;
 	while (i < actions->nb_philosophers)
 	{
-		if (pthread_create(&thread[i], 0, &routine, (void *)(actions->philo + i)))
+		if (pthread_create(&thread[i], 0, &routine, actions->philo + i))
 			break ;
 		i++;
 	}

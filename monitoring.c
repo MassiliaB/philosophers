@@ -1,56 +1,42 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   monitoring.c                                       :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: masboula <marvin@42.fr>                    +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2021/10/27 12:31:07 by masboula          #+#    #+#             */
+/*   Updated: 2021/10/27 12:31:09 by masboula         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "philo.h"
 
-long	get_ms()
+int	all_alive(t_philo *philo)
 {
-	struct timeval	current_time;
-
-	gettimeofday(&current_time, NULL);
-	return ((current_time.tv_sec) * 1000 + (current_time.tv_usec) / 1000);
-}
-
-void	my_usleep(long time, long start)
-{
-	long int	time_before;
-	long int	time_actual;
-
-	time_before = get_ms() - start;
-	time_actual = 0;
-	while ((get_ms() - start) - time_before < time)
-		usleep(10);
-}
-
-void	all_ate(t_philo *philo)
-{
-	philo->actions->each_one++;
-	pthread_mutex_unlock(&(philo->actions->mutex_eat));
 	pthread_mutex_lock(&(philo->actions->mutex_die));
-	philo->actions->are_alive = 0;
+	if (!philo->actions->are_alive)
+	{
+		pthread_mutex_unlock(&(philo->actions->mutex_die));
+		return (0);
+	}
 	pthread_mutex_unlock(&(philo->actions->mutex_die));
-	write(1, "All philos ate ", 15);
-	write_nbr(philo->has_eat);
-	write(1, " time\n", 6);
+	return (1);
 }
 
-int	time_has_eat(t_philo *philo)
+int	time_to_die(t_philo *philo, int actual_time)
 {
-	if (philo->actions->each_must_eat == -1)
-		return (-1);
-	pthread_mutex_lock(&(philo->actions->mutex_eat));
-	if (philo->has_eat == philo->actions->each_must_eat)
+	if (actual_time >= (long)philo->actions->tto_die)
 	{
-		if (philo->actions->each_one != philo->actions->nb_philosophers)
-		{
-			philo->actions->each_one++;
-			pthread_mutex_unlock(&(philo->actions->mutex_eat));
+		if (philo->philosopher % 2 == 0
+			< max(2 * philo->actions->tto_eat, philo->actions->tto_eat
+				+ philo->actions->tto_sleep))
 			return (1);
-		}
-		if (philo->actions->each_one == philo->actions->nb_philosophers)
-		{
-			all_ate(philo);
+		if (philo->philosopher % 2 < philo->actions->tto_eat
+			+ max(2 * philo->actions->tto_eat, philo->actions->tto_eat
+				+ philo->actions->tto_sleep))
 			return (1);
-		}
 	}
-	pthread_mutex_unlock(&(philo->actions->mutex_eat));
 	return (0);
 }
 
@@ -60,7 +46,7 @@ void	*is_it_dead(void *arg)
 	t_philo	*philo;
 	long	start;
 
-	philo = (t_philo*)arg;
+	philo = (t_philo *)arg;
 	start = get_ms();
 	while (1)
 	{
@@ -71,7 +57,7 @@ void	*is_it_dead(void *arg)
 			;
 		else if (time_has_eat(philo) == 1 || !all_alive(philo))
 			break ;
-		else if (actual_time >= (long)philo->actions->tto_die)
+		else if (time_to_die(philo, actual_time))
 		{
 			print_this(philo, start, philo->philosopher, DIED);
 			pthread_mutex_lock(&(philo->actions->mutex_die));
@@ -79,7 +65,6 @@ void	*is_it_dead(void *arg)
 			pthread_mutex_unlock(&(philo->actions->mutex_die));
 			break ;
 		}
-		usleep(100);
 	}
 	return (NULL);
 }
