@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   print.c                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: masboula <marvin@42.fr>                    +#+  +:+       +#+        */
+/*   By: masboula <masboula@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/10/27 12:31:15 by masboula          #+#    #+#             */
-/*   Updated: 2021/10/27 12:31:16 by masboula         ###   ########.fr       */
+/*   Updated: 2021/10/28 17:29:47 by masboula         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,7 +58,7 @@ void	print_this(t_philo *philo, long start, int philosopher, char *is_doing)
 		pthread_mutex_unlock(&(philo->actions->mutex_print));
 		return ;
 	}
-	buff_this(to_print, start, philosopher, is_doing);
+	buff_this(to_print, start, philosopher + 1, is_doing);
 	write(1, &to_print, ft_strlen(to_print));
 	pthread_mutex_unlock(&(philo->actions->mutex_print));
 	return ;

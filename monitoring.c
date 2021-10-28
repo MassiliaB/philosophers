@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   monitoring.c                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: masboula <marvin@42.fr>                    +#+  +:+       +#+        */
+/*   By: masboula <masboula@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/10/27 12:31:07 by masboula          #+#    #+#             */
-/*   Updated: 2021/10/27 12:31:09 by masboula         ###   ########.fr       */
+/*   Updated: 2021/10/28 17:33:24 by masboula         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,19 +24,28 @@ int	all_alive(t_philo *philo)
 	return (1);
 }
 
-int	time_to_die(t_philo *philo, int actual_time)
+void	someone_is_dead_stop(t_philo *philo, int i, long start)
 {
-	if (actual_time >= (long)philo->actions->tto_die)
+	if (i)
+		print_this(philo, start, philo->philosopher, DIED);
+	pthread_mutex_lock(&(philo->actions->mutex_die));
+	philo->actions->are_alive = 0;
+	pthread_mutex_unlock(&(philo->actions->mutex_die));
+}
+
+int	everyone_done_eat(t_philo *philo, int i)
+{
+	pthread_mutex_lock(&(philo->actions->mutex_each));
+	if (i == 1)
 	{
-		if (philo->philosopher % 2 == 0
-			< max(2 * philo->actions->tto_eat, philo->actions->tto_eat
-				+ philo->actions->tto_sleep))
-			return (1);
-		if (philo->philosopher % 2 < philo->actions->tto_eat
-			+ max(2 * philo->actions->tto_eat, philo->actions->tto_eat
-				+ philo->actions->tto_sleep))
-			return (1);
+		philo->actions->each_one++;
 	}
+	else if (philo->actions->each_one == philo->actions->nb_philosophers)
+	{
+		pthread_mutex_unlock(&(philo->actions->mutex_each));
+		return (1);
+	}
+	pthread_mutex_unlock(&(philo->actions->mutex_each));
 	return (0);
 }
 
@@ -53,16 +62,22 @@ void	*is_it_dead(void *arg)
 		pthread_mutex_lock(&(philo->actions->mutex_meal));
 		actual_time = get_ms() - start - philo->last_meal;
 		pthread_mutex_unlock(&(philo->actions->mutex_meal));
-		if (time_has_eat(philo) == 0)
-			;
-		else if (time_has_eat(philo) == 1 || !all_alive(philo))
-			break ;
-		else if (time_to_die(philo, actual_time))
+
+		if (philo->actions->each_must_eat > 0)
 		{
-			print_this(philo, start, philo->philosopher, DIED);
-			pthread_mutex_lock(&(philo->actions->mutex_die));
-			philo->actions->are_alive = 0;
-			pthread_mutex_unlock(&(philo->actions->mutex_die));
+			if (everyone_done_eat(philo, 0))
+			{
+				someone_is_dead_stop(philo, 0, start);
+				if (all_alive(philo))
+					printf("All philo ate %d time\n", philo->has_eat);
+				break ;
+			}
+		}	
+		else if (!all_alive(philo))
+			break ;
+		else if (actual_time >= (long)philo->actions->tto_die)
+		{
+			someone_is_dead_stop(philo, 1, start);
 			break ;
 		}
 	}

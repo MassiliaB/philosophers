@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   philo.c                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: masboula <marvin@42.fr>                    +#+  +:+       +#+        */
+/*   By: masboula <masboula@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/10/27 12:31:01 by masboula          #+#    #+#             */
-/*   Updated: 2021/10/27 12:31:02 by masboula         ###   ########.fr       */
+/*   Updated: 2021/10/28 17:30:12 by masboula         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,16 +39,24 @@ void	*routine(void *arg)
 
 	philo = (t_philo *)arg;
 	pthread_create(&thread, 0, &is_it_dead, philo);
+	//		printf("phi = %d \n", philo->philosopher);
 	start = get_ms();
 	while (1)
 	{
-		if (!all_alive(philo))
+		if (philo->actions->each_must_eat < 0 && !all_alive(philo))
 			break ;
 		print_this(philo, start, philo->philosopher, IS_THINKING);
 		takes_forks_and_eat(philo, start);
+		if (philo->has_eat == philo->actions->each_must_eat)
+		{
+		//	printf("hello\n");
+			everyone_done_eat(philo, 1);
+			break ;
+		}
 		print_this(philo, start, philo->philosopher, IS_SLEEPING);
 		my_usleep(philo->actions->tto_sleep, start);
 	}
+//	printf("bye phi = %d \n", philo->philosopher);
 	pthread_join(thread, 0);
 	return (NULL);
 }
@@ -87,3 +95,7 @@ int	main(int ac, char **av)
 	simulation(&actions);
 	return (clean_all(&actions));
 }
+/*				write(1, "All philos ate ", 15);
+				write_nbr(philo->has_eat);
+				write(1, " time\n", 6);
+*/

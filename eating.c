@@ -3,60 +3,39 @@
 /*                                                        :::      ::::::::   */
 /*   eating.c                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: masboula <marvin@42.fr>                    +#+  +:+       +#+        */
+/*   By: masboula <masboula@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/10/27 12:30:15 by masboula          #+#    #+#             */
-/*   Updated: 2021/10/27 12:30:31 by masboula         ###   ########.fr       */
+/*   Updated: 2021/10/28 17:30:21 by masboula         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo.h"
 
-void	all_ate(t_philo *philo)
+/*void	all_ate(t_philo *philo)
 {
 	philo->actions->each_one++;
-	pthread_mutex_unlock(&(philo->actions->mutex_eat));
-	pthread_mutex_lock(&(philo->actions->mutex_die));
-	philo->actions->are_alive = 0;
-	pthread_mutex_unlock(&(philo->actions->mutex_die));
-	write(1, "All philos ate ", 15);
-	write_nbr(philo->has_eat);
-	write(1, " time\n", 6);
-}
+//	pthread_mutex_unlock(&(philo->actions->mutex_eat));
+	
 
-int	time_has_eat(t_philo *philo)
-{
-	if (philo->actions->each_must_eat == -1)
-		return (-1);
-	pthread_mutex_lock(&(philo->actions->mutex_eat));
-	if (philo->has_eat == philo->actions->each_must_eat)
-	{
-		if (philo->actions->each_one != philo->actions->nb_philosophers)
-		{
-			philo->actions->each_one++;
-			pthread_mutex_unlock(&(philo->actions->mutex_eat));
-			return (1);
-		}
-		if (philo->actions->each_one == philo->actions->nb_philosophers)
-		{
-			all_ate(philo);
-			return (1);
-		}
-	}
-	pthread_mutex_unlock(&(philo->actions->mutex_eat));
-	return (0);
-}
+	pthread_mutex_lock(&(philo->actions->mutex_meal));	
+
+	pthread_mutex_unlock(&(philo->actions->mutex_meal));
+}*/
 
 void	is_eating(t_philo *philo, long start)
 {
 	print_this(philo, start, philo->philosopher, IS_EATING);
+
 	pthread_mutex_lock(&(philo->actions->mutex_meal));
 	philo->last_meal = get_ms() - start;
 	pthread_mutex_unlock(&(philo->actions->mutex_meal));
+
 	my_usleep(philo->actions->tto_eat, start);
-	pthread_mutex_lock(&(philo->actions->mutex_eat));
+
 	philo->has_eat += 1;
-	pthread_mutex_unlock(&(philo->actions->mutex_eat));
+//	pthread_mutex_lock(&(philo->actions->mutex_eat));
+//	pthread_mutex_unlock(&(philo->actions->mutex_eat));
 }
 
 int	takes_forks_and_eat(t_philo *philo, long start)
@@ -71,6 +50,10 @@ int	takes_forks_and_eat(t_philo *philo, long start)
 		left = philo->philosopher;
 		right = philo->philosopher - 1;
 	}
+/*	if ( philo->philosopher == 5)
+	{
+		printf("phi = %d , ri %d, lef %d\n", philo->philosopher, right , left);
+	}*/
 	pthread_mutex_lock(&(philo->actions->mutex_fork[right]));
 	print_this(philo, start, philo->philosopher, TAKE_FORK);
 	pthread_mutex_lock(&(philo->actions->mutex_fork[left]));

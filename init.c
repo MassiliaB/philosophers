@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   init.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: masboula <marvin@42.fr>                    +#+  +:+       +#+        */
+/*   By: masboula <masboula@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/10/27 12:31:30 by masboula          #+#    #+#             */
-/*   Updated: 2021/10/27 12:31:31 by masboula         ###   ########.fr       */
+/*   Updated: 2021/10/28 17:28:09 by masboula         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,7 @@ int	clean_all(t_actions *actions)
 	i = 0;
 	if (actions->mutex_fork)
 	{
-		while (i <= actions->nb_philosophers)
+		while (i < actions->nb_philosophers)
 		{
 			pthread_mutex_destroy(&(actions->mutex_fork[i]));
 			i++;
@@ -29,7 +29,8 @@ int	clean_all(t_actions *actions)
 	pthread_mutex_destroy(&(actions->mutex_die));
 	pthread_mutex_destroy(&(actions->mutex_print));
 	pthread_mutex_destroy(&(actions->mutex_meal));
-	pthread_mutex_destroy(&(actions->mutex_eat));
+	pthread_mutex_destroy(&(actions->mutex_each));
+//	pthread_mutex_destroy(&(actions->mutex_eat));
 	if (actions->philo)
 		free(actions->philo);
 	return (0);
@@ -40,11 +41,11 @@ int	init_mutex(t_actions *actions)
 	int	i;
 
 	actions->mutex_fork = malloc(sizeof(pthread_mutex_t)
-			* (actions->nb_philosophers + 1));
+			* actions->nb_philosophers);
 	if (!actions->mutex_fork)
 		return (0);
 	i = 0;
-	while (i <= actions->nb_philosophers)
+	while (i < actions->nb_philosophers)
 	{
 		if (pthread_mutex_init(&(actions->mutex_fork[i]), 0))
 			return (0);
@@ -56,7 +57,7 @@ int	init_mutex(t_actions *actions)
 		return (0);
 	if (pthread_mutex_init(&(actions->mutex_meal), 0))
 		return (0);
-	if (pthread_mutex_init(&(actions->mutex_eat), 0))
+	if (pthread_mutex_init(&(actions->mutex_each), 0))
 		return (0);
 	return (1);
 }
@@ -97,7 +98,7 @@ void	the_philo(t_actions *actions)
 	i = 0;
 	while (i < actions->nb_philosophers)
 	{
-		philo[i].philosopher = i + 1;
+		philo[i].philosopher = i;
 		philo[i].has_eat = 0;
 		philo[i].last_meal = 0;
 		philo[i].actions = actions;

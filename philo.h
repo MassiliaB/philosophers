@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   philo.h                                            :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: masboula <masboula@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2021/10/28 12:27:06 by masboula          #+#    #+#             */
+/*   Updated: 2021/10/28 16:22:31 by masboula         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #ifndef PHILO_H
 # define PHILO_H
 
@@ -12,12 +24,12 @@
 # define IS_THINKING " is thinking\n"
 # define IS_SLEEPING  " is sleeping\n"
 # define DIED " died\n"
+
 typedef struct s_philo
 {
-	int			philosopher;
-	long		last_meal;
-	int			has_eat;
-	long		start;
+	int					philosopher;
+	long				last_meal;
+	int					has_eat;
 	struct s_actions	*actions;	
 }				t_philo;
 
@@ -33,14 +45,13 @@ typedef struct s_actions
 	pthread_mutex_t	mutex_print;
 	pthread_mutex_t	mutex_eat;
 	pthread_mutex_t	mutex_meal;
+	pthread_mutex_t	mutex_each;
 	pthread_mutex_t	mutex_die;
 	pthread_mutex_t	*mutex_fork;
 	t_philo			*philo;	
 }				t_actions;
 
-
 int		my_atoi(char *number);
-int		clean_all();
 void	write_nbr(int nb);
 int		ft_strlen(char *str);
 int		nb_size(int nb);
@@ -50,7 +61,7 @@ int		init_mutex(t_actions *actions);
 int		clean_all(t_actions *actions);
 void	*is_it_dead(void *arg);
 int		time_has_eat(t_philo *philo);
-long	get_ms();
+long	get_ms(void);
 void	my_usleep(long time, long start);
 void	buff_digit(int size, long nb, int index, char *buff);
 void	buff_this(char *buff, long start, int philosopher, char *is_doing);
@@ -58,5 +69,7 @@ void	print_this(t_philo *philo, long start, int philosopher, char *is_doing);
 int		all_alive(t_philo *philo);
 int		takes_forks_and_eat(t_philo *philo, long start);
 int		max(int a, int b);
+void	someone_is_dead_stop(t_philo *philo, int i, long start);
+int		everyone_done_eat(t_philo *philo, int i);
 
 #endif
