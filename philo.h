@@ -70,6 +70,6 @@ int		all_alive(t_philo *philo);
 int		takes_forks_and_eat(t_philo *philo, long start);
 int		max(int a, int b);
 void	someone_is_dead_stop(t_philo *philo, int i, long start);
-int		everyone_done_eat(t_philo *philo, int i);
+int		everyone_done_eat(t_philo *philo, int i, long start);
 
 #endif

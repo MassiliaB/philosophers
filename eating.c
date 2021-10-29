@@ -43,17 +43,23 @@ int	takes_forks_and_eat(t_philo *philo, long start)
 	int	left;
 	int	right;
 
-	left = philo->philosopher + 1;
-	right = philo->philosopher;
+	left = philo->philosopher;
+	right = philo->philosopher - 1;
 	if (philo->philosopher % 2 == 0)
 	{
-		left = philo->philosopher;
-		right = philo->philosopher - 1;
+	left = philo->philosopher + 1;
+	right = philo->philosopher;
+	//	printf("PHI = %d\n", philo->philosopher + 1);
+		if (philo->philosopher + 1 == philo->actions->nb_philosophers)
+		{
+	//	printf("PHI = %d\n", philo->philosopher + 1);
+			left = 0;
+		}
 	}
 /*	if ( philo->philosopher == 5)
 	{
-		printf("phi = %d , ri %d, lef %d\n", philo->philosopher, right , left);
 	}*/
+	//	printf("phi = %d , ri %d, lef %d\n", philo->philosopher + 1, right , left);
 	pthread_mutex_lock(&(philo->actions->mutex_fork[right]));
 	print_this(philo, start, philo->philosopher, TAKE_FORK);
 	pthread_mutex_lock(&(philo->actions->mutex_fork[left]));

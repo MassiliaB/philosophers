@@ -39,7 +39,6 @@ void	*routine(void *arg)
 
 	philo = (t_philo *)arg;
 	pthread_create(&thread, 0, &is_it_dead, philo);
-	//		printf("phi = %d \n", philo->philosopher);
 	start = get_ms();
 	while (1)
 	{
@@ -47,17 +46,19 @@ void	*routine(void *arg)
 			break ;
 		print_this(philo, start, philo->philosopher, IS_THINKING);
 		takes_forks_and_eat(philo, start);
+
 		if (philo->has_eat == philo->actions->each_must_eat)
 		{
 		//	printf("hello\n");
-			everyone_done_eat(philo, 1);
+			everyone_done_eat(philo, 1, start);
 			break ;
 		}
+
 		print_this(philo, start, philo->philosopher, IS_SLEEPING);
 		my_usleep(philo->actions->tto_sleep, start);
 	}
-//	printf("bye phi = %d \n", philo->philosopher);
 	pthread_join(thread, 0);
+//	printf("bye phi = %d \n", philo->philosopher + 1);
 	return (NULL);
 }
 
